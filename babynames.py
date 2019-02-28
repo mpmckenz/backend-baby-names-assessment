@@ -45,8 +45,31 @@ def extract_names(filename):
     followed by the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
-    # +++your code here+++
-    return
+    results = []
+    with open(filename) as f:
+        text = f.read()
+
+    year_match = re.search(r'Popularity\sin\s(\d\d\d\d)', text)
+    assert year_match
+    if not year_match:
+        print('Could not extract year')
+        return None
+    year = year_match.group(1)
+    results.append(year + '\n')
+
+    tuples = re.findall(r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>', text)
+    names_to_rank = {}
+    for rank, boy, girl in tuples:
+        if boy not in names_to_rank:
+            names_to_rank[boy] = rank
+        if girl not in names_to_rank:
+            names_to_rank[girl] = rank
+
+    sorted_names = sorted(names_to_rank.keys())
+    for name in sorted_names:
+        results.append(name + ' ' + names_to_rank[name] + '\n')
+
+    return results
 
 
 def create_parser():
@@ -57,6 +80,7 @@ def create_parser():
     # The nargs option instructs the parser to expect 1 or more filenames.
     # It will also expand wildcards just like the shell, e.g. 'baby*.html' will work.
     parser.add_argument('files', help='filename(s) to parse', nargs='+')
+
     return parser
 
 
@@ -69,13 +93,13 @@ def main():
         sys.exit(1)
 
     file_list = args.files
-
     # option flag
-    create_summary = args.summaryfile
-
-    # +++your code here+++
-    # For each filename, get the names, then either print the text output
-    # or write it to a summary file
+    # create_summary = args.summaryfile
+    for filename in file_list:
+        names = extract_names(filename)
+        output = open('A_to_Z_ranking_{}_summary'.format(filename), "a")
+        output.write("\n".join(names))
+        # print 'Baby name ranks have been alphabetized for file {}'.format(filename)
 
 
 if __name__ == '__main__':
